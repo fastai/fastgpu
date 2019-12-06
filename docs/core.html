@@ -24,96 +24,30 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 <div class="cell border-box-sizing code_cell rendered">
 
 </div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">nbdev.showdoc</span> <span class="kn">import</span> <span class="o">*</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h2 id="NVIDIAGPUs" class="doc_header"><code>class</code> <code>NVIDIAGPUs</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L11" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NVIDIAGPUs</code>()</p>
-</blockquote>
-<p>Vends locked access to NVIDIA GPUs.</p>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="NVIDIAGPUs.is_available" class="doc_header"><code>NVIDIAGPUs.is_available</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L26" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>NVIDIAGPUs.is_available</code>(<strong><code>gpu_id</code></strong>)</p>
-</blockquote>
-<p>If a GPU's used_memory is less than 30M then it will be regarded as available.</p>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">NVIDIAGPUs</span><span class="p">()</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">is_available</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">lockedID</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">lock_next</span><span class="p">()</span>
-<span class="n">nextLockedID</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">lock_next</span><span class="p">()</span>
-<span class="n">lockedID</span>
-<span class="n">nextLockedID</span>
-<span class="n">g</span><span class="o">.</span><span class="n">unlock</span><span class="p">(</span><span class="n">lockedID</span><span class="p">)</span>
-<span class="n">g</span><span class="o">.</span><span class="n">_is_locked</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Requirements">Requirements<a class="anchor-link" href="#Requirements">&#182;</a></h2>
+<p>Here's what fastgpu does:</p>
+<ol>
+<li>poll <code>to_run</code></li>
+<li>find first file</li>
+<li>check there's an available worker id</li>
+<li>move it to <code>running</code></li>
+<li>run it<ol>
+<li>create lock file</li>
+<li>redirect stdout/err to <code>out</code></li>
+<li>run it</li>
+<li>when done, move it to <code>complete</code> or <code>failed</code></li>
+<li>unlock</li>
+</ol>
+</li>
+</ol>
+
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Optional xtras</p>
-<ul>
-<li>2nd line of script, if a comment, is added as a description to the log</li>
-</ul>
+<p>First we create a directory to store our scripts and outputs.</p>
 
 </div>
 </div>
@@ -125,11 +59,6 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
 <span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">path_run</span> <span class="o">=</span> <span class="n">path</span><span class="o">/</span><span class="s1">&#39;to_run&#39;</span>
-<span class="n">path_running</span> <span class="o">=</span> <span class="n">path</span><span class="o">/</span><span class="s1">&#39;running&#39;</span>
-<span class="n">path_complete</span> <span class="o">=</span> <span class="n">path</span><span class="o">/</span><span class="s1">&#39;complete&#39;</span>
-<span class="n">path_fail</span> <span class="o">=</span> <span class="n">path</span><span class="o">/</span><span class="s1">&#39;fail&#39;</span>
-<span class="n">path_out</span> <span class="o">=</span> <span class="n">path</span><span class="o">/</span><span class="s1">&#39;out&#39;</span>
 </pre></div>
 
     </div>
@@ -149,8 +78,9 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="setup_dirs" class="doc_header"><code>setup_dirs</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L42" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>setup_dirs</code>(<strong><code>path</code></strong>)</p>
+<h4 id="setup_dirs" class="doc_header"><code>setup_dirs</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L10" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>setup_dirs</code>(<strong><code>path</code></strong>)</p>
 </blockquote>
+<p>Create and return the following subdirs of <code>p</code>: to_run running complete fail out</p>
 
 </div>
 
@@ -159,22 +89,46 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>These are all the subdirectories that are created for us. Your scripts go in <code>to_run</code>.</p>
+
+</div>
+</div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">_create_tests</span><span class="p">():</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="s1">&#39;/bin/ls&#39;</span><span class="p">,</span> <span class="n">path_run</span><span class="o">/</span><span class="s1">&#39;ls&#39;</span><span class="p">)</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="s1">&#39;/bin/false&#39;</span><span class="p">,</span> <span class="n">path_run</span><span class="o">/</span><span class="s1">&#39;false&#39;</span><span class="p">)</span>
-    <span class="p">(</span><span class="n">path_run</span><span class="o">/</span><span class="s1">&#39;test_dir&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">path_run</span><span class="p">,</span><span class="n">path_running</span><span class="p">,</span><span class="n">path_complete</span><span class="p">,</span><span class="n">path_fail</span><span class="p">,</span><span class="n">path_out</span> <span class="o">=</span> <span class="n">setup_dirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</pre></div>
 
-<span class="k">def</span> <span class="nf">_setup_test_env</span><span class="p">():</span>
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's create a scripts directory with a couple of "scripts" (actually symlinks for this demo) in it.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">_setup_test_env</span><span class="p">():</span>
     <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
     <span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">setup_dirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="n">_create_tests</span><span class="p">()</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="s1">&#39;/bin/ls&#39;</span><span class="p">,</span> <span class="n">path_run</span><span class="o">/</span><span class="s1">&#39;ls&#39;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="s1">&#39;/bin/false&#39;</span><span class="p">,</span> <span class="n">path_run</span><span class="o">/</span><span class="s1">&#39;false&#39;</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">path_run</span><span class="o">/</span><span class="s1">&#39;test_dir&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -195,6 +149,19 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 </div>
 
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Helper-functions-for-scripts">Helper functions for scripts<a class="anchor-link" href="#Helper-functions-for-scripts">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>These functions are used to find and run scripts, and move scripts to the appropriate subdirectory at the appropriate time.</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 
 </div>
@@ -207,7 +174,7 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="find_next_script" class="doc_header"><code>find_next_script</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L48" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>find_next_script</code>(<strong><code>p</code></strong>)</p>
+<h4 id="find_next_script" class="doc_header"><code>find_next_script</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L17" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>find_next_script</code>(<strong><code>p</code></strong>)</p>
 </blockquote>
 
 </div>
@@ -244,67 +211,7 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="is_available" class="doc_header"><code>is_available</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L53" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>is_available</code>(<strong><code>i</code></strong>, <strong><code>p</code></strong>)</p>
-</blockquote>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="find_next_workerid" class="doc_header"><code>find_next_workerid</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L55" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>find_next_workerid</code>(<strong><code>worker_ids</code></strong>, <strong><code>p</code></strong>)</p>
-</blockquote>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="lock_worker" class="doc_header"><code>lock_worker</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L59" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>lock_worker</code>(<strong><code>p</code></strong>, <strong><code>wid</code></strong>, <strong><code>details</code></strong>=<em><code>''</code></em>)</p>
-</blockquote>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="unlock_worker" class="doc_header"><code>unlock_worker</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L62" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>unlock_worker</code>(<strong><code>p</code></strong>, <strong><code>wid</code></strong>)</p>
+<h4 id="safe_rename" class="doc_header"><code>safe_rename</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L22" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>safe_rename</code>(<strong><code>file</code></strong>, <strong><code>dest</code></strong>)</p>
 </blockquote>
 
 </div>
@@ -320,13 +227,23 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">_setup_test_env</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># #export</span>
+<span class="c1"># def _run_1script(script, path_complete, path_fail, path_out, path, wid, on_complete=noop):</span>
+<span class="c1">#     failed = False</span>
+<span class="c1">#     with (path_out/f&#39;{script.name}.stderr&#39;).open(&quot;w&quot;) as stderr:</span>
+<span class="c1">#         with (path_out/f&#39;{script.name}.stdout&#39;).open(&quot;w&quot;) as stdout:</span>
+<span class="c1">#             try: res = subprocess.call(str(script), stdout=stdout, stderr=stderr)</span>
+<span class="c1">#             except: failed = True</span>
+<span class="c1">#     (path_out/f&#39;{script.name}.exitcode&#39;).write_text(str(res))</span>
+<span class="c1">#     dest = path_fail if res or failed else path_complete</span>
+<span class="c1">#     finish_name = safe_rename(script, dest)</span>
+<span class="c1">#     on_complete(wid)</span>
 
-<span class="n">unlock_worker</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">worker_ids</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-<span class="n">test_eq</span><span class="p">(</span><span class="n">find_next_workerid</span><span class="p">(</span><span class="n">worker_ids</span><span class="p">,</span> <span class="n">path</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">lock_worker</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
-<span class="n">test_eq</span><span class="p">(</span><span class="n">find_next_workerid</span><span class="p">(</span><span class="n">worker_ids</span><span class="p">,</span> <span class="n">path</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c1"># #export</span>
+<span class="c1"># def run_1script(script, path_complete, path_fail, path_out, path, wid):</span>
+<span class="c1">#     thread = Thread(target=_run_1script, args=(script, path_complete, path_fail, path_out, path, wid))</span>
+<span class="c1">#     thread.start()</span>
+<span class="c1">#     thread.join()</span>
 </pre></div>
 
     </div>
@@ -334,22 +251,36 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 </div>
 
 </div>
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="ResourcePoolBase" class="doc_header"><code>class</code> <code>ResourcePoolBase</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L32" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ResourcePoolBase</code>(<strong><code>path</code></strong>)</p>
+</blockquote>
+<p>Base class for locked access to list of idents</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<ol>
-<li>X poll a directory</li>
-<li>X find first file</li>
-<li>X check there's an available worker id</li>
-<li>X move it to <code>running</code></li>
-<li>run it<ol>
-<li>X create lock file</li>
-<li>X redirect stdout/err</li>
-<li>X run it</li>
-<li>X when done, move it to <code>complete</code> or <code>failed</code></li>
-<li>X unlock</li>
-</ol>
-</li>
-</ol>
+<p>This abstract class locks and unlocks resources using lockfiles. Override <code>all_ids</code> to make the list of resources available. See <a href="/core.html#FixedWorkerPool"><code>FixedWorkerPool</code></a> for a simple example and details on each method.</p>
 
 </div>
 </div>
@@ -366,8 +297,9 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="safe_rename" class="doc_header"><code>safe_rename</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L67" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>safe_rename</code>(<strong><code>file</code></strong>, <strong><code>dest</code></strong>)</p>
+<h2 id="FixedWorkerPool" class="doc_header"><code>class</code> <code>FixedWorkerPool</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L88" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>FixedWorkerPool</code>(<strong><code>worker_ids</code></strong>, <strong><code>path</code></strong>) :: <a href="/core.html#ResourcePoolBase"><code>ResourcePoolBase</code></a></p>
 </blockquote>
+<p>Vends locked access to fixed list of idents</p>
 
 </div>
 
@@ -376,11 +308,26 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The simplest possible <a href="/core.html#ResourcePoolBase"><code>ResourcePoolBase</code></a> subclass - the resources are just a list of ids. For instance:</p>
+
+</div>
+</div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
+<div class="input">
 
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">_setup_test_env</span><span class="p">()</span>
+<span class="n">wp</span> <span class="o">=</span> <span class="n">FixedWorkerPool</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">path</span><span class="p">)</span>
+</pre></div>
+
+    </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered">
+</div>
 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
@@ -392,8 +339,175 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="run_1script" class="doc_header"><code>run_1script</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L89" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>run_1script</code>(<strong><code>script</code></strong>, <strong><code>path_complete</code></strong>, <strong><code>path_fail</code></strong>, <strong><code>path_out</code></strong>, <strong><code>path</code></strong>, <strong><code>wid</code></strong>)</p>
+<h4 id="ResourcePoolBase.unlock" class="doc_header"><code>ResourcePoolBase.unlock</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L40" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>ResourcePoolBase.unlock</code>(<strong><code>ident</code></strong>)</p>
 </blockquote>
+<p>Remove lockfile for <code>ident</code></p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>If there are no locks, this does nothing:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">wp</span><span class="o">.</span><span class="n">unlock</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="ResourcePoolBase.find_next" class="doc_header"><code>ResourcePoolBase.find_next</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L43" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>ResourcePoolBase.find_next</code>()</p>
+</blockquote>
+<p>Finds next available resource, or None</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Initially all resources are available (unlocked), so the first from the provided list will be returned:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_eq</span><span class="p">(</span><span class="n">wp</span><span class="o">.</span><span class="n">find_next</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="ResourcePoolBase.lock" class="doc_header"><code>ResourcePoolBase.lock</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L39" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>ResourcePoolBase.lock</code>(<strong><code>ident</code></strong>)</p>
+</blockquote>
+<p>Create lockfile for <code>ident</code></p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>After locking the first resource, it is no longer returned next:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">wp</span><span class="o">.</span><span class="n">lock</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">test_eq</span><span class="p">(</span><span class="n">wp</span><span class="o">.</span><span class="n">find_next</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="ResourcePoolBase.lock_next" class="doc_header"><code>ResourcePoolBase.lock_next</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L44" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>ResourcePoolBase.lock_next</code>()</p>
+</blockquote>
+<p>Locks an available resource and returns its ident, or None</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This is the normal way to access a resource - it simply combines <code>find_next</code> and <code>lock</code>:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">wp</span><span class="o">.</span><span class="n">lock_next</span><span class="p">()</span>
+<span class="n">test_eq</span><span class="p">(</span><span class="n">wp</span><span class="o">.</span><span class="n">find_next</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="ResourcePoolBase.run" class="doc_header"><code>ResourcePoolBase.run</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L61" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>ResourcePoolBase.run</code>(<strong><code>script</code></strong>, <strong><code>ident</code></strong>)</p>
+</blockquote>
+<p>Run <code>script</code> using resource <code>ident</code></p>
 
 </div>
 
@@ -410,20 +524,9 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">_setup_test_env</span><span class="p">()</span>
 <span class="n">f</span> <span class="o">=</span> <span class="n">find_next_script</span><span class="p">(</span><span class="n">path_run</span><span class="p">)</span>
-<span class="n">run_1script</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">path_complete</span><span class="p">,</span> <span class="n">path_fail</span><span class="p">,</span> <span class="n">path_out</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-</pre></div>
+<span class="n">wp</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_eq</span><span class="p">(</span><span class="n">find_next_script</span><span class="p">(</span><span class="n">path_run</span><span class="p">),</span> <span class="n">path_run</span><span class="o">/</span><span class="s1">&#39;ls&#39;</span><span class="p">)</span>
+<span class="n">test_eq</span><span class="p">(</span><span class="n">find_next_script</span><span class="p">(</span><span class="n">path_run</span><span class="p">),</span> <span class="n">path_run</span><span class="o">/</span><span class="s1">&#39;ls&#39;</span><span class="p">)</span>
 <span class="n">test_eq</span><span class="p">((</span><span class="n">path_out</span><span class="o">/</span><span class="s1">&#39;false.exitcode&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(),</span> <span class="s1">&#39;1&#39;</span><span class="p">)</span>
 <span class="k">assert</span> <span class="p">(</span><span class="n">path_fail</span><span class="o">/</span><span class="s1">&#39;false&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
 </pre></div>
@@ -435,9 +538,6 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-
 <div class="output_wrapper">
 <div class="output">
 
@@ -445,8 +545,9 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="poll_scripts" class="doc_header"><code>poll_scripts</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L95" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>poll_scripts</code>(<strong><code>worker_ids</code></strong>, <strong><code>p</code></strong>, <strong><code>poll_interval</code></strong>=<em><code>0.1</code></em>)</p>
+<h4 id="ResourcePoolBase.poll_scripts" class="doc_header"><code>ResourcePoolBase.poll_scripts</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L66" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>ResourcePoolBase.poll_scripts</code>(<strong><code>poll_interval</code></strong>=<em><code>0.1</code></em>)</p>
 </blockquote>
+<p>Poll <code>to_run</code> for scripts and run in parallel on available resources</p>
 
 </div>
 
@@ -462,7 +563,7 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">_setup_test_env</span><span class="p">()</span>
-<span class="n">poll_scripts</span><span class="p">(</span><span class="n">worker_ids</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+<span class="n">wp</span><span class="o">.</span><span class="n">poll_scripts</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -482,6 +583,141 @@ summary: "A queue service for quickly developing scripts that use all your GPUs 
 <span class="k">assert</span> <span class="p">(</span><span class="n">path_fail</span><span class="o">/</span><span class="s1">&#39;false&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
 <span class="k">assert</span> <span class="p">(</span><span class="n">path_complete</span><span class="o">/</span><span class="s1">&#39;ls&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
 <span class="k">assert</span> <span class="s1">&#39;README.md&#39;</span> <span class="ow">in</span> <span class="p">(</span><span class="n">path_out</span><span class="o">/</span><span class="s1">&#39;ls.stdout&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="GPU">GPU<a class="anchor-link" href="#GPU">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="NVIDIAGPUs" class="doc_header"><code>class</code> <code>NVIDIAGPUs</code><a href="https://github.com/fastai/fastgpu/tree/master/fastgpu/core.py#L99" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NVIDIAGPUs</code>(<strong><code>path</code></strong>) :: <a href="/core.html#ResourcePoolBase"><code>ResourcePoolBase</code></a></p>
+</blockquote>
+<p>Vends locked access to NVIDIA GPUs</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">_setup_test_env</span><span class="p">()</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">NVIDIAGPUs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">is_available</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>True</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">lockedID</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">lock_next</span><span class="p">()</span>
+<span class="n">lockedID</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">nextLockedID</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">lock_next</span><span class="p">()</span>
+<span class="n">nextLockedID</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>1</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">unlock</span><span class="p">(</span><span class="n">lockedID</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">is_available</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 
     </div>

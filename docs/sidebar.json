@@ -1,7 +1,6 @@
 {
   "fastgpu": {
     "Overview": "/",
-    "fastgpu": "/core",
-    "Title": "/GPULocks"
+    "fastgpu": "/core"
   }
 }

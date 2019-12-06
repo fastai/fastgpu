@@ -74,6 +74,17 @@ class ResourcePoolBase():
             self.run(run_name, ident)
 
 #Cell
+add_docs(ResourcePoolBase, "Base class for locked access to list of idents",
+         unlock="Remove lockfile for `ident`",
+         lock="Create lockfile for `ident`",
+         is_available="Is `ident` available",
+         all_ids="All idents (abstract method)",
+         find_next="Finds next available resource, or None",
+         lock_next="Locks an available resource and returns its ident, or None",
+         run="Run `script` using resource `ident`",
+         poll_scripts="Poll `to_run` for scripts and run in parallel on available resources")
+
+#Cell
 class FixedWorkerPool(ResourcePoolBase):
     "Vends locked access to fixed list of idents"
     def __init__(self, worker_ids, path):
