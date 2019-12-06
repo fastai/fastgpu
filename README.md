@@ -44,3 +44,7 @@ optional arguments:
 Once a script is selected to be run, it is moved into a directory called `running`. Once it's finished, it's moved into `complete` or `fail` as appropriate. stdout and stderr are captured to files with the same name as the script, plus `stdout` or `stderr` appended.
 
 If `exit` is `1` (which is the default), then once all scripts are run, `fastgpu_poll` will exit. If it is `0` then `fastgpu_poll` will continue running until it is killed; it will keep polling for any new scripts that are added to `to_run`.
+
+To limit the GPUs available to fastgpu, use [CUDA_VISIBLE_DEVICES](https://devblogs.nvidia.com/cuda-pro-tip-control-gpu-visibility-cuda_visible_devices/), e.g.:
+
+    CUDA_VISIBLE_DEVICES=2,3 fastgpu_poll script_dir
