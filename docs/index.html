@@ -1,10 +1,10 @@
 ---
-
-title: Project name here
+toc: false
+title: fastgpu
 keywords: fastai
 sidebar: home_sidebar
 
-summary: "Summary description here."
+summary: "A queue service for quickly developing scripts that use all your GPUs efficiently"
 ---
 <!--
 
@@ -23,7 +23,8 @@ summary: "Summary description here."
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This file will become your README and also the index of your documentation.</p>
+<p><code>fastgpu</code> provides a single command, <code>fastgpu_poll</code>, which polls a directory to check for scripts to run, and then runs them on the first available GPU. If no GPUs are available, it waits until one is. If more than one GPU is available, multiple scripts are run in parallel, one per GPU.</p>
+<p>An API is also provided for polling programmatically, which is extensible for assigning other resources to processes besides GPUs.</p>
 
 </div>
 </div>
@@ -36,7 +37,7 @@ summary: "Summary description here."
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><code>pip install your_project_name</code></p>
+<p><code>pip install fastgpu</code></p>
 
 </div>
 </div>
@@ -49,39 +50,32 @@ summary: "Summary description here."
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Fill me in please! Don't forget code examples:</p>
+<p><code>--help</code> provides command help:</p>
+<hr>
+
+<pre><code>$ fastgpu_poll --help
+usage: fastgpu_poll [-h] [--path PATH] [--exit EXIT]
+
+Poll `path` for scripts using `ResourcePoolGPU.poll_scripts`
+
+optional arguments:
+  -h, --help   show this help message and exit
+  --path PATH  Path containing `to_run` directory
+  --exit EXIT  Exit when `to_run` is empty</code></pre>
+<hr>
 
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>2</pre>
-</div>
-
-</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><code>path</code> defaults to the current directory. The path should contain a subdirectory <code>to_run</code> containing executable scripts you wish to run. It should not contain any other files, although it can contain subdirectories (which are ignored).</p>
+<p><code>fastgpu_poll</code> will run each script in <code>to_run</code> in sorted order. Each script will be assigned to one GPU. The id of the GPU selected will be passed as the first argument to the script; it is the responsibility of your script to use this GPU.</p>
+<p>Once a script is selected to be run, it is moved into a directory called <code>running</code>. Once it's finished, it's moved into <code>complete</code> or <code>fail</code> as appropriate. stdout and stderr are captured to files with the same name as the script, plus <code>stdout</code> or <code>stderr</code> appended.</p>
+<p>If <code>exit</code> is <code>1</code> (which is the default), then once all scripts are run, <code>fastgpu_poll</code> will exit. If it is <code>0</code> then <code>fastgpu_poll</code> will continue running until it is killed; it will keep polling for any new scripts that are added to <code>to_run</code>.</p>
 
 </div>
 </div>
-
 </div>
 </div>
  

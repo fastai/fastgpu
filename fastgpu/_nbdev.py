@@ -7,7 +7,7 @@ index = {"setup_dirs": "00_core.ipynb",
          "safe_rename": "00_core.ipynb",
          "ResourcePoolBase": "00_core.ipynb",
          "FixedWorkerPool": "00_core.ipynb",
-         "NVIDIAGPUs": "00_core.ipynb"}
+         "ResourcePoolGPU": "00_core.ipynb"}
 
 modules = ["core.py"]
 
