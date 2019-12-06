@@ -15,11 +15,13 @@ def setup_dirs(path):
 
 #Cell
 def find_next_script(p):
+    "Get the first script from `p` (in sorted order)"
     files = p.ls().sorted().filter(Self.is_file())
     if files: return files[0]
 
 #Cell
 def safe_rename(file, dest):
+    "Move `file` to `dest`, prefixing a random uuid if there's a name conflict"
     to_name = dest/file.name
     if to_name.exists():
         u = uuid4()
