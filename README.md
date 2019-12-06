@@ -25,8 +25,6 @@ An API is also provided for polling programmatically, which is extensible for as
 
 `--help` provides command help:
 
-----
-
 ```
 $ fastgpu_poll --help
 usage: fastgpu_poll [-h] [--path PATH] [--exit EXIT]
@@ -38,8 +36,6 @@ optional arguments:
   --path PATH  Path containing `to_run` directory
   --exit EXIT  Exit when `to_run` is empty
 ```
-
-----
 
 `path` defaults to the current directory. The path should contain a subdirectory `to_run` containing executable scripts you wish to run. It should not contain any other files, although it can contain subdirectories (which are ignored).
 
