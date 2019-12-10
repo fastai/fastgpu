@@ -54,10 +54,8 @@ class ResourcePoolBase():
 
     def _run(self, script, ident):
         failed = False
-        res = 'failed'
         with (self.path/'out'/f'{script.name}.stderr').open("w") as stderr:
             with (self.path/'out'/f'{script.name}.stdout').open("w") as stdout:
-                #res = subprocess.call([str(script), str(ident)], stdout=stdout, stderr=stderr)
                 try: res = subprocess.call([str(script), str(ident)], stdout=stdout, stderr=stderr)
                 except: failed = True
         (self.path/'out'/f'{script.name}.exitcode').write_text(str(res))
@@ -68,20 +66,17 @@ class ResourcePoolBase():
     def run(self, script, ident):
         thread = Thread(target=self._run, args=(script, ident))
         thread.start()
-        #thread.join()
+        thread.join()
 
     def poll_scripts(self, poll_interval=0.1, exit_when_empty=True):
         while True:
             sleep(poll_interval)
             script = find_next_script(self.path/'to_run')
             if script is None:
-                #print('no script found')
                 if exit_when_empty: break
                 else: continue
             ident = self.lock_next()
-            if ident is None:
-                #print('no ident found')
-                continue
+            if ident is None: continue
             run_name = safe_rename(script, self.path/'running')
             self.run(run_name, ident)
 
@@ -121,12 +116,9 @@ class ResourcePoolGPU(ResourcePoolBase):
 
     def is_available(self,ident):
         "If a GPU's used_memory is less than 1G and is running no procs then it will be regarded as available"
-        #print(self.devs)
         if not super().is_available(ident): return False
-        #print('a')
         device = nvmlDeviceGetHandleByIndex(self.devs[ident])
         if nvmlDeviceGetComputeRunningProcesses(device): return False
-        #print(nvmlDeviceGetMemoryInfo(device).used)
         return nvmlDeviceGetMemoryInfo(device).used <= 1e9
 
     def all_ids(self):
