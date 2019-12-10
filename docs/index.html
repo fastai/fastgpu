@@ -68,10 +68,10 @@ optional arguments:
 <div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><code>path</code> defaults to the current directory. The path should contain a subdirectory <code>to_run</code> containing executable scripts you wish to run. It should not contain any other files, although it can contain subdirectories (which are ignored).</p>
-<p><code>fastgpu_poll</code> will run each script in <code>to_run</code> in sorted order. Each script will be assigned to one GPU. The id of the GPU selected will be passed as the first argument to the script; it is the responsibility of your script to use this GPU.</p>
+<p><code>fastgpu_poll</code> will run each script in <code>to_run</code> in sorted order. Each script will be assigned to one GPU. The <code>CUDA_VISIBLE_DEVICES</code> environment variable will be set to the ID of this GPU in the script's subprocess. In addition, the <code>FASTGPU_ID</code> environment variable will also be set to this ID.</p>
 <p>Once a script is selected to be run, it is moved into a directory called <code>running</code>. Once it's finished, it's moved into <code>complete</code> or <code>fail</code> as appropriate. stdout and stderr are captured to files with the same name as the script, plus <code>stdout</code> or <code>stderr</code> appended.</p>
 <p>If <code>exit</code> is <code>1</code> (which is the default), then once all scripts are run, <code>fastgpu_poll</code> will exit. If it is <code>0</code> then <code>fastgpu_poll</code> will continue running until it is killed; it will keep polling for any new scripts that are added to <code>to_run</code>.</p>
-<p>To limit the GPUs available to fastgpu, use <a href="https://devblogs.nvidia.com/cuda-pro-tip-control-gpu-visibility-cuda_visible_devices/">CUDA_VISIBLE_DEVICES</a>, e.g.:</p>
+<p>To limit the GPUs available to fastgpu, set <a href="https://devblogs.nvidia.com/cuda-pro-tip-control-gpu-visibility-cuda_visible_devices/">CUDA_VISIBLE_DEVICES</a> before polling, e.g.:</p>
 
 <pre><code>CUDA_VISIBLE_DEVICES=2,3 fastgpu_poll script_dir</code></pre>
 

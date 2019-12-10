@@ -11,7 +11,7 @@ entries:
       url: /
     - output: web,pdf
       title: fastgpu
-      url: /core
+      url: /utils
     output: web
     title: fastgpu
   output: web
