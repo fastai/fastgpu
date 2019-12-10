@@ -9,8 +9,7 @@ index = {"setup_dirs": "00_core.ipynb",
          "FixedWorkerPool": "00_core.ipynb",
          "ResourcePoolGPU": "00_core.ipynb"}
 
-modules = ["core.py",
-           "utils.py"]
+modules = ["core.py"]
 
 git_url = "https://github.com/fastai/fastgpu/tree/master/"
 

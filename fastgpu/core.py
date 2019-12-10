@@ -41,7 +41,7 @@ class ResourcePoolBase():
 
     def _lockpath(self,ident): return self.path/f'{ident}.lock'
     def _is_locked(self,ident): return self._lockpath(ident).exists()
-    def lock(self,ident): self._lockpath(ident).write_text(str("locked"))
+    def lock(self,ident, txt='locked'): self._lockpath(ident).write_text(str(txt))
     def unlock(self,ident): return self._lockpath(ident).unlink() if self._is_locked(ident) else None
     def is_available(self,ident): return not self._is_locked(ident)
     def all_ids(self): raise NotImplementedError
@@ -55,7 +55,9 @@ class ResourcePoolBase():
     def _launch(self, script, ident, env):
         with (self.path/'out'/f'{script.name}.stderr').open("w") as stderr:
             with (self.path/'out'/f'{script.name}.stdout').open("w") as stdout:
-                return subprocess.call(str(script), env=env, stdout=stdout, stderr=stderr)
+                process = subprocess.Popen(str(script), env=env, stdout=stdout, stderr=stderr)
+                self.lock(ident, process.pid)
+                return process.wait()
 
     def _run(self, script, ident):
         failed = False
@@ -119,10 +121,16 @@ class ResourcePoolGPU(ResourcePoolBase):
         self.ids = L.range(self.devs)
 
     def _launch(self, script, ident, env):
-        env['CUDA_VISIBLE_DEVICES'] = str(ident)
-        with (self.path/'out'/f'{script.name}.stderr').open("w") as stderr:
-            with (self.path/'out'/f'{script.name}.stdout').open("w") as stdout:
-                return subprocess.call(str(script), env=env, stdout=stdout, stderr=stderr)
+        env['CUDA_VISIBLE_DEVICES'] = str(self.devs[ident])
+        return super()._launch(script, ident, env)
+#         with (self.path/'out'/f'{script.name}.stderr').open("w") as stderr:
+#             with (self.path/'out'/f'{script.name}.stdout').open("w") as stdout:
+#                 process = subprocess.Popen(str(script), env=env, stdout=stdout, stderr=stderr)
+#                 self.lock(ident, process.pid)
+#                 return process.wait()
+#         with (self.path/'out'/f'{script.name}.stderr').open("w") as stderr:
+#             with (self.path/'out'/f'{script.name}.stdout').open("w") as stdout:
+#                 return subprocess.call(str(script), env=env, stdout=stdout, stderr=stderr)
 
     def is_available(self,ident):
         "If a GPU's used_memory is less than 1G and is running no procs then it will be regarded as available"
