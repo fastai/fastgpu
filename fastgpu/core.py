@@ -123,7 +123,7 @@ class ResourcePoolGPU(ResourcePoolBase):
         "If a GPU's used_memory is less than 1G and is running no procs then it will be regarded as available"
         #print(self.devs)
         if not super().is_available(ident): return False
-        #print('a')
+        #print(ident)
         device = nvmlDeviceGetHandleByIndex(self.devs[ident])
         if nvmlDeviceGetComputeRunningProcesses(device): return False
         #print(nvmlDeviceGetMemoryInfo(device).used)

@@ -1,2 +1,2 @@
 #!/bin/sh
-echo $1
+echo $FASTGPU_ID
