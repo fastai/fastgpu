@@ -11,7 +11,10 @@ entries:
       url: /
     - output: web,pdf
       title: fastgpu
-      url: /utils
+      url: core.html
+    - output: web,pdf
+      title: Ablation study example
+      url: ablation.html
     output: web
     title: fastgpu
   output: web

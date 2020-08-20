@@ -1,6 +1,7 @@
 {
   "fastgpu": {
     "Overview": "/",
-    "fastgpu": "/utils"
+    "fastgpu": "core.html",
+    "Ablation study example": "ablation.html"
   }
 }
