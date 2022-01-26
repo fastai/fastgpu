@@ -4,10 +4,8 @@ from .core import *
 
 @call_parse
 def fastgpu_poll(
-    # Path containing `to_run` directory
-    path:str='.',
-    # Exit when `to_run` is empty
-    exit:int=1,
+    path:str='.',  # Path containing `to_run` directory
+    exit:int=1,  # Exit when `to_run` is empty
 ):
     "Poll `path` for scripts using `ResourcePoolGPU.poll_scripts`"
     rp = ResourcePoolGPU(path=path)
