@@ -7,6 +7,10 @@ import os
 os.environ['CUDA_DEVICE_ORDER']='PCI_BUS_ID'
 from fastcore.all import *
 from pynvml import *
+from time import sleep
+from copy import copy
+import subprocess
+fr
 
 # Cell
 def setup_dirs(path):
