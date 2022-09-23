@@ -10,7 +10,7 @@ from pynvml import *
 from time import sleep
 from copy import copy
 import subprocess
-fr
+from threading import Thread
 
 # Cell
 def setup_dirs(path):
